@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'JetBrains Mono', 'Space Mono', monospace;
+    background-color: #020703;
+    color: #4ade80;
+    overflow-x: hidden;
+  }
+}
+
+/* CRT Scanlines CSS Raster */
+.scanlines {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.45) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.02),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 3px, 6px 100%;
+}
+
+/* Cathode Ray Tube rolling beam flicker */
+@keyframes crtBeam {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.crt-beam {
+  background: linear-gradient(
+    to bottom,
+    rgba(34, 197, 94, 0) 0%,
+    rgba(74, 222, 128, 0.04) 50%,
+    rgba(34, 197, 94, 0) 100%
+  );
+  height: 20%;
+  animation: crtBeam 9s linear infinite;
+}
+
+/* Phosphor Text Glow */
+.text-phosphor {
+  text-shadow: 0 0 4px rgba(74, 222, 128, 0.55), 0 0 12px rgba(34, 197, 94, 0.3);
+}
+
+.text-phosphor-bold {
+  text-shadow: 0 0 6px rgba(74, 222, 128, 0.8), 0 0 20px rgba(34, 197, 94, 0.45);
+}
+
+.text-crimson-classified {
+  text-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
+}
+
+/* Red Stamped Border for Classified Documents */
+.stamp-classified {
+  border: 3px dashed #ef4444;
+  color: #ef4444;
+  transform: rotate(-3deg);
+  box-shadow: inset 0 0 15px rgba(239, 68, 68, 0.2);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #020c04;
+}
+::-webkit-scrollbar-thumb {
+  background: #14532d;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #22c55e;
+}

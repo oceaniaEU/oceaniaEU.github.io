@@ -1,0 +1,8 @@
+{
+  "name": "OceaniaEU Hub",
+  "description": "Official 1984 Oceania Mock Government Telescreen Portal with retro CRT static television design, the four canonical ministries, state announcements, and interactive roleplay modules.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
