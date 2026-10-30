@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 
 interface CrtScreenWrapperProps {
   children: React.ReactNode
@@ -13,12 +13,12 @@ export const CrtScreenWrapper: React.FC<CrtScreenWrapperProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
-  // Real-time analog TV static noise generation
+  // Real-time analog TV static noise generation with memory optimization & safety
   useEffect(() => {
     if (!staticEnabled) return
     const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
     if (!ctx) return
 
     let animationId: number
@@ -27,34 +27,49 @@ export const CrtScreenWrapper: React.FC<CrtScreenWrapperProps> = ({
     canvas.width = width
     canvas.height = height
 
+    let imgData: ImageData
+    try {
+      imgData = ctx.createImageData(width, height)
+    } catch {
+      return
+    }
+
+    const buffer = new Uint32Array(imgData.data.buffer)
+    const len = buffer.length
+
     const renderNoise = () => {
-      const imgData = ctx.createImageData(width, height)
-      const buffer = new Uint32Array(imgData.data.buffer)
-      const len = buffer.length
-
-      for (let i = 0; i < len; i++) {
-        // Subtle phosphor green TV fuzz noise
-        if (Math.random() > 0.88) {
-          const lum = Math.floor(Math.random() * 80) + 100
-          buffer[i] = (255 << 24) | (0 << 16) | (lum << 8) | 0
-        } else {
-          buffer[i] = 0 // transparent
+      try {
+        for (let i = 0; i < len; i++) {
+          if (Math.random() > 0.88) {
+            const lum = Math.floor(Math.random() * 80) + 100
+            // Little-endian RGBA: byte 0=R(0), 1=G(lum), 2=B(0), 3=A(255)
+            buffer[i] = (255 << 24) | (0 << 16) | (lum << 8) | 0
+          } else {
+            buffer[i] = 0
+          }
         }
+        ctx.putImageData(imgData, 0, 0)
+        animationId = requestAnimationFrame(renderNoise)
+      } catch {
+        // Safe canvas fallback
       }
-
-      ctx.putImageData(imgData, 0, 0)
-      animationId = requestAnimationFrame(renderNoise)
     }
 
     renderNoise()
-    return () => cancelAnimationFrame(animationId)
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId)
+    }
   }, [staticEnabled])
 
   return (
-    <div className="relative min-h-screen bg-[#020703] text-emerald-400 font-mono flex flex-col items-center justify-start overflow-x-hidden crt-container selection:bg-emerald-500 selection:text-black">
+    <div className="relative min-h-screen bg-[#020703] text-emerald-400 font-mono flex flex-col items-center justify-start overflow-x-hidden selection:bg-emerald-500 selection:text-black">
       {/* Curved Cathode Glass Vignette & Phosphor Glow */}
-      <div className="fixed inset-0 pointer-events-none z-30 shadow-[inset_0_0_120px_rgba(0,0,0,0.95)]" />
-      <div className="fixed inset-0 pointer-events-none z-30 bg-gradient-radial from-transparent via-transparent to-black/80" />
+      <div
+        className="fixed inset-0 pointer-events-none z-30 shadow-[inset_0_0_120px_rgba(0,0,0,0.95)]"
+        style={{
+          background: 'radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.85) 100%)',
+        }}
+      />
 
       {/* Retro Cathode Scanline Raster (Togglable) */}
       {scanlinesEnabled && (
@@ -65,7 +80,7 @@ export const CrtScreenWrapper: React.FC<CrtScreenWrapperProps> = ({
       {staticEnabled && (
         <canvas
           ref={canvasRef}
-          className="fixed inset-0 w-full h-full pointer-events-none z-25 opacity-12 mix-blend-screen"
+          className="fixed inset-0 w-full h-full pointer-events-none z-20 opacity-12 mix-blend-screen"
         />
       )}
 

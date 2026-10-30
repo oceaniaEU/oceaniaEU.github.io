@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" style="background-color: #020703; color: #4ade80; min-height: 100vh;">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👁️</text></svg>" />
@@ -9,13 +9,37 @@
     <meta property="og:title" content="OceaniaEU Hub" />
     <meta property="og:description" content="Official 1984 Oceania Mock Government Telescreen Portal with retro CRT static television design, the four canonical ministries, state announcements, and interactive roleplay modules." />
     <meta property="og:type" content="website" />
+    
+    <!-- Critical base styling preventing white flash on initial paint -->
+    <style>
+      html, body {
+        background-color: #020703 !important;
+        color: #4ade80 !important;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif;
+      }
+      #root {
+        min-height: 100vh;
+        background-color: #020703;
+      }
+    </style>
+
     <!-- Google Fonts for retro monospace and authoritative typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Cinzel:wght@600;700;900&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-[#020703] text-emerald-400 antialiased selection:bg-emerald-500 selection:text-black min-h-screen">
-    <div id="root"></div>
+  <body style="background-color: #020703; color: #4ade80; margin: 0; min-height: 100vh;" class="bg-[#020703] text-emerald-400 antialiased selection:bg-emerald-500 selection:text-black min-h-screen">
+    <div id="root">
+      <div style="display: flex; height: 100vh; width: 100%; align-items: center; justify-content: center; background-color: #020703; color: #4ade80; font-family: monospace; font-size: 13px; letter-spacing: 0.1em; text-align: center; padding: 20px;">
+        <div>
+          <div style="font-size: 24px; margin-bottom: 8px;">👁️</div>
+          <div>[ TELESCREEN RECEPTOR BOOTING · AIRSTRIP ONE ]</div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

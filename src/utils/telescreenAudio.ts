@@ -1,4 +1,4 @@
-// Web Audio API synthesizer for authentic 1984 telescreen ambiance, sirens, typewriters, and memory hole incineration
+// Web Audio API synthesizer for authentic 1984 telescreen ambiance, sirens, typewriters, and memory hole
 
 class TelescreenAudioEngine {
   private ctx: AudioContext | null = null
@@ -7,27 +7,35 @@ class TelescreenAudioEngine {
   private isMuted: boolean = true
 
   private initCtx() {
-    if (!this.ctx && typeof window !== 'undefined') {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-      if (AudioCtx) {
-        this.ctx = new AudioCtx()
+    try {
+      if (!this.ctx && typeof window !== 'undefined') {
+        const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+        if (AudioCtx) {
+          this.ctx = new AudioCtx()
+        }
       }
-    }
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume()
+      if (this.ctx && this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {})
+      }
+    } catch {
+      // Audio context initialization failure handled safely
     }
   }
 
   public toggleMute(): boolean {
-    this.isMuted = !this.isMuted
-    if (!this.isMuted) {
-      this.initCtx()
-      this.startCrtHum()
-      this.playTelescreenChime()
-    } else {
-      this.stopCrtHum()
+    try {
+      this.isMuted = !this.isMuted
+      if (!this.isMuted) {
+        this.initCtx()
+        this.startCrtHum()
+        this.playTelescreenChime()
+      } else {
+        this.stopCrtHum()
+      }
+      return !this.isMuted
+    } catch {
+      return false
     }
-    return !this.isMuted
   }
 
   public getIsPlaying(): boolean {
@@ -64,9 +72,8 @@ class TelescreenAudioEngine {
     if (!this.ctx) return
 
     try {
-      // Metallic thud + short noise burst
       const now = this.ctx.currentTime
-      const bufferSize = this.ctx.sampleRate * 0.03
+      const bufferSize = Math.floor(this.ctx.sampleRate * 0.03)
       const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate)
       const output = noiseBuffer.getChannelData(0)
       for (let i = 0; i < bufferSize; i++) {
@@ -92,7 +99,6 @@ class TelescreenAudioEngine {
       whiteNoise.start(now)
       whiteNoise.stop(now + 0.035)
 
-      // Low impact resonance
       const osc = this.ctx.createOscillator()
       const oscGain = this.ctx.createGain()
       osc.type = 'triangle'
@@ -121,7 +127,7 @@ class TelescreenAudioEngine {
       const osc = this.ctx.createOscillator()
       const gain = this.ctx.createGain()
       osc.type = 'sine'
-      osc.frequency.setValueAtTime(1760, now) // High metallic ping
+      osc.frequency.setValueAtTime(1760, now)
       gain.gain.setValueAtTime(0.09, now)
       gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5)
 
@@ -141,7 +147,7 @@ class TelescreenAudioEngine {
 
     try {
       const now = this.ctx.currentTime
-      const bufferSize = this.ctx.sampleRate * 0.8
+      const bufferSize = Math.floor(this.ctx.sampleRate * 0.8)
       const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate)
       const output = noiseBuffer.getChannelData(0)
       for (let i = 0; i < bufferSize; i++) {
@@ -179,11 +185,11 @@ class TelescreenAudioEngine {
 
     try {
       const now = this.ctx.currentTime
-      // Iconic totalitarian discordant chime (low brass-like triad)
       const freqs = [330, 440, 523.25]
       freqs.forEach((freq, i) => {
-        const osc = this.ctx!.createOscillator()
-        const gain = this.ctx!.createGain()
+        if (!this.ctx) return
+        const osc = this.ctx.createOscillator()
+        const gain = this.ctx.createGain()
         osc.type = 'sawtooth'
         osc.frequency.setValueAtTime(freq, now + i * 0.09)
 
@@ -191,7 +197,7 @@ class TelescreenAudioEngine {
         gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.09 + 0.6)
 
         osc.connect(gain)
-        gain.connect(this.ctx!.destination)
+        gain.connect(this.ctx.destination)
         osc.start(now + i * 0.09)
         osc.stop(now + i * 0.09 + 0.65)
       })
@@ -214,7 +220,6 @@ class TelescreenAudioEngine {
       osc1.type = 'sawtooth'
       osc2.type = 'sawtooth'
 
-      // Rising and falling air-raid telescreen siren
       osc1.frequency.setValueAtTime(450, now)
       osc1.frequency.linearRampToValueAtTime(900, now + 0.6)
       osc1.frequency.linearRampToValueAtTime(450, now + 1.2)
@@ -256,7 +261,7 @@ class TelescreenAudioEngine {
 
       this.humOsc = this.ctx.createOscillator()
       this.humOsc.type = 'sine'
-      this.humOsc.frequency.setValueAtTime(50, this.ctx.currentTime) // 50 Hz European/Oceania mains hum
+      this.humOsc.frequency.setValueAtTime(50, this.ctx.currentTime)
       this.humOsc.connect(this.humGain)
       this.humOsc.start()
     } catch {
